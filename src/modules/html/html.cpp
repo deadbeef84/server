@@ -63,7 +63,7 @@ void caspar_log(const CefRefPtr<CefBrowser>&        browser,
         auto msg = CefProcessMessage::Create(LOG_MESSAGE_NAME);
         msg->GetArgumentList()->SetInt(0, level);
         msg->GetArgumentList()->SetString(1, message);
-        browser->SendProcessMessage(PID_BROWSER, msg);
+        browser->GetMainFrame()->SendProcessMessage(PID_BROWSER, msg);
     }
 }
 
@@ -87,7 +87,7 @@ class remove_handler : public CefV8Handler
             return false;
         }
 
-        browser_->SendProcessMessage(PID_BROWSER, CefProcessMessage::Create(REMOVE_MESSAGE_NAME));
+        browser_->GetMainFrame()->SendProcessMessage(PID_BROWSER, CefProcessMessage::Create(REMOVE_MESSAGE_NAME));
 
         return true;
     }
@@ -182,6 +182,9 @@ class renderer_application
 
     void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) override
     {
+        command_line->AppendSwitch("use-views");
+        command_line->AppendSwitchWithValue("ozone-platform", "headless");
+
         if (enable_gpu_) {
             command_line->AppendSwitch("enable-webgl");
         }
@@ -199,6 +202,7 @@ class renderer_application
     }
 
     bool OnProcessMessageReceived(CefRefPtr<CefBrowser>        browser,
+                                  CefRefPtr<CefFrame>          frame,
                                   CefProcessId                 source_process,
                                   CefRefPtr<CefProcessMessage> message) override
     {

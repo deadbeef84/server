@@ -30,9 +30,10 @@
 #include <common/gl/gl_check.h>
 #include <common/os/thread.h>
 
-#include <GL/glew.h>
+#define SFML_OPENGL_ES
 
-#include <SFML/Window/Context.hpp>
+#include <EGL/egl.h>
+#include <GL/glew.h>
 
 #ifdef WIN32
 #include "../../d3d/d3d_device.h"
@@ -50,6 +51,7 @@
 #include <array>
 #include <future>
 #include <thread>
+#include <iostream>
 
 namespace caspar { namespace accelerator { namespace ogl {
 
@@ -60,7 +62,9 @@ struct device::impl : public std::enable_shared_from_this<impl>
     using texture_queue_t = tbb::concurrent_bounded_queue<std::shared_ptr<texture>>;
     using buffer_queue_t  = tbb::concurrent_bounded_queue<std::shared_ptr<buffer>>;
 
-    sf::Context device_;
+    EGLDisplay eglDisplay_;
+    EGLSurface eglSurface_;
+    EGLContext eglContext_;
 
     std::array<tbb::concurrent_unordered_map<size_t, texture_queue_t>, 4> device_pools_;
     std::array<tbb::concurrent_unordered_map<size_t, buffer_queue_t>, 2>  host_pools_;
@@ -83,14 +87,45 @@ struct device::impl : public std::enable_shared_from_this<impl>
     std::thread                         thread_;
 
     impl()
-        : device_(sf::ContextSettings(0, 0, 0, 4, 5, sf::ContextSettings::Attribute::Core), 1, 1)
+        : eglSurface_(EGL_NO_SURFACE), eglContext_(EGL_NO_CONTEXT)
         , work_(make_work_guard(service_))
     {
         CASPAR_LOG(info) << L"Initializing OpenGL Device.";
 
-        device_.setActive(true);
+        // 1. Initialize EGL
+        eglDisplay_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-        if (glewInit() != GLEW_OK) {
+        EGLint major, minor;
+        eglInitialize(eglDisplay_, &major, &minor);
+
+        const EGLint configAttribs[] = {
+          EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+          EGL_BLUE_SIZE, 8,
+          EGL_GREEN_SIZE, 8,
+          EGL_RED_SIZE, 8,
+          EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+          EGL_NONE
+        };
+
+        const EGLint pbufferAttribs[] = {
+            EGL_WIDTH, 1,
+            EGL_HEIGHT, 1,
+            EGL_NONE,
+        };
+
+        EGLint numConfigs;
+        EGLConfig eglConfig;
+        eglChooseConfig(eglDisplay_, configAttribs, &eglConfig, 1, &numConfigs);
+        eglSurface_ = eglCreatePbufferSurface(eglDisplay_, eglConfig, pbufferAttribs);
+
+        eglBindAPI(EGL_OPENGL_API);
+        EGLContext eglContext_ = eglCreateContext(eglDisplay_, eglConfig, EGL_NO_CONTEXT, NULL);
+
+        eglMakeCurrent(eglDisplay_, eglSurface_, eglSurface_, eglContext_);
+
+        GLenum err = glewInit();
+        if (err != GLEW_OK) {
+            std::cerr << "GLEW Error: " << glewGetErrorString(err) << std::endl;
             CASPAR_THROW_EXCEPTION(gl::ogl_exception() << msg_info("Failed to initialize GLEW."));
         }
 
@@ -115,7 +150,7 @@ struct device::impl : public std::enable_shared_from_this<impl>
         GL(glCreateFramebuffers(1, &fbo_));
         GL(glBindFramebuffer(GL_FRAMEBUFFER, fbo_));
 
-        device_.setActive(false);
+        eglMakeCurrent(eglDisplay_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
 #ifdef WIN32
         d3d_device_ = d3d::d3d_device::get_device();
@@ -131,10 +166,10 @@ struct device::impl : public std::enable_shared_from_this<impl>
 #endif
 
         thread_ = std::thread([&] {
-            device_.setActive(true);
+            eglMakeCurrent(eglDisplay_, eglSurface_, eglSurface_, eglContext_);
             set_thread_name(L"OpenGL Device");
             service_.run();
-            device_.setActive(false);
+            eglMakeCurrent(eglDisplay_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         });
     }
 
@@ -143,7 +178,7 @@ struct device::impl : public std::enable_shared_from_this<impl>
         work_.reset();
         thread_.join();
 
-        device_.setActive(true);
+        eglMakeCurrent(eglDisplay_, eglSurface_, eglSurface_, eglContext_);
 
         for (auto& pool : host_pools_)
             pool.clear();
@@ -154,6 +189,20 @@ struct device::impl : public std::enable_shared_from_this<impl>
         sync_queue_.clear();
 
         GL(glDeleteFramebuffers(1, &fbo_));
+
+        eglMakeCurrent(eglDisplay_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+        // // Destroy context
+        // if (eglContext_ != EGL_NO_CONTEXT) {
+        //     eglDestroyContext(eglDisplay_, eglContext_);
+        // }
+
+        // // Destroy surface
+        // if (eglSurface_ != EGL_NO_SURFACE) {
+        //     eglDestroySurface(eglDisplay_, eglSurface_);
+        // }
+
+        eglTerminate(eglDisplay_);
     }
 
     template <typename Func>

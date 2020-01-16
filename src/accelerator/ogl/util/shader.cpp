@@ -56,7 +56,7 @@ struct shader::impl
             GL(glGetInfoLogARB(vertex_shader, sizeof(info), 0, info));
             GL(glDeleteObjectARB(vertex_shader));
             std::stringstream str;
-            str << "Failed to compile vertex shader:" << std::endl << info << std::endl;
+            str << "Failed to compile vertex shader:" << std::endl << info << std::endl << vertex_source << std::endl;
             CASPAR_THROW_EXCEPTION(caspar_exception() << msg_info(str.str()));
         }
 

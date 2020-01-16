@@ -87,7 +87,6 @@ else ()
 		${TBB_MALLOC_PROXY_LIBRARIES}
 		${SFML_LIBRARIES}
 		${GLEW_LIBRARIES}
-		${OPENGL_gl_LIBRARY}
 		${X11_LIBRARIES}
 		${JPEG_LIBRARIES}
 		${SNDFILE_LIBRARIES}
@@ -98,6 +97,7 @@ else ()
 		icuuc
 		z
 		pthread
+        OpenGL::OpenGL OpenGL::EGL
 	)
 endif ()
 
@@ -141,5 +141,17 @@ else ()
 	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/libcef.so ${CMAKE_BINARY_DIR}/staging/lib/libcef.so)
 	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/libEGL.so ${CMAKE_BINARY_DIR}/staging/lib/libEGL.so)
 	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/libGLESv2.so ${CMAKE_BINARY_DIR}/staging/lib/libGLESv2.so)
+
+    ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CEF_RESOURCE_PATH}/locales ${CMAKE_BINARY_DIR}/staging/lib/locales)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/cef.pak ${CMAKE_BINARY_DIR}/staging/lib/cef.pak)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/cef_100_percent.pak ${CMAKE_BINARY_DIR}/staging/lib/cef_100_percent.pak)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/cef_200_percent.pak ${CMAKE_BINARY_DIR}/staging/lib/cef_200_percent.pak)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/cef_extensions.pak ${CMAKE_BINARY_DIR}/staging/lib/cef_extensions.pak)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/devtools_resources.pak ${CMAKE_BINARY_DIR}/staging/lib/devtools_resources.pak)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_RESOURCE_PATH}/icudtl.dat ${CMAKE_BINARY_DIR}/staging/lib/icudtl.dat)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CEF_BIN_PATH}/swiftshader ${CMAKE_BINARY_DIR}/staging/lib/swiftshader)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/natives_blob.bin ${CMAKE_BINARY_DIR}/staging/lib/natives_blob.bin)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/snapshot_blob.bin ${CMAKE_BINARY_DIR}/staging/lib/snapshot_blob.bin)
+	ADD_CUSTOM_COMMAND (TARGET casparcg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CEF_BIN_PATH}/v8_context_snapshot.bin ${CMAKE_BINARY_DIR}/staging/lib/v8_context_snapshot.bin)
   endif ()
 endif ()

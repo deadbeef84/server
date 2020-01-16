@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
 	libsndfile1-dev \
 	libopenal-dev \
 	libglfw3-dev \
+    libegl1-mesa-dev \
 	libxcursor-dev \
 	libxinerama-dev \
 	libxi-dev \
