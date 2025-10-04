@@ -246,7 +246,7 @@ struct Stream
             FF(av_opt_set_array(sink, "sample_formats", AV_OPT_SEARCH_CHILDREN | AV_OPT_ARRAY_REPLACE, 0, nb_sample_fmts, AV_OPT_TYPE_SAMPLE_FMT, codec->sample_fmts));
 
             int nb_sample_rates = 0;
-            for (const auto* p = codec->supported_samplerates; *p != 0; ++p, ++nb_sample_rates)
+            for (const auto* p = codec->supported_samplerates; p && *p != 0; ++p, ++nb_sample_rates)
                 ;
             FF(av_opt_set_array(sink, "samplerates", AV_OPT_SEARCH_CHILDREN | AV_OPT_ARRAY_REPLACE, 0, nb_sample_rates, AV_OPT_TYPE_INT, codec->supported_samplerates));
 #else
