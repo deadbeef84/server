@@ -9,7 +9,7 @@
 ** accordance with:
 ** 
 ** (1) if the Software is obtained from Blackmagic Design, the End User License 
-** Agreement for the Software Development Kit (“EULA”) available at 
+** Agreement for the Software Development Kit ("EULA") available at 
 ** https://www.blackmagicdesign.com/EULA/DeckLinkSDK; or
 ** 
 ** (2) if the Software is obtained from any third party, such licensing terms 
@@ -121,12 +121,12 @@ public:
 
 extern "C" {
 
-    IDeckLinkIterator* BMD_PUBLIC CreateDeckLinkIteratorInstance_v10_11 (void);
-    IDeckLinkDiscovery* BMD_PUBLIC CreateDeckLinkDiscoveryInstance_v10_11 (void);
-    IDeckLinkAPIInformation* BMD_PUBLIC CreateDeckLinkAPIInformationInstance_v10_11 (void);
-    IDeckLinkGLScreenPreviewHelper* BMD_PUBLIC CreateOpenGLScreenPreviewHelper_v10_11 (void);
-    IDeckLinkVideoConversion* BMD_PUBLIC CreateVideoConversionInstance_v10_11 (void);
-    IDeckLinkVideoFrameAncillaryPackets* BMD_PUBLIC CreateVideoFrameAncillaryPacketsInstance_v10_11 (void); // For use when creating a custom IDeckLinkVideoFrame without wrapping IDeckLinkOutput::CreateVideoFrame
+    BMD_PUBLIC IDeckLinkIterator* CreateDeckLinkIteratorInstance_v10_11 (void);
+    BMD_PUBLIC IDeckLinkDiscovery* CreateDeckLinkDiscoveryInstance_v10_11 (void);
+    BMD_PUBLIC IDeckLinkAPIInformation* CreateDeckLinkAPIInformationInstance_v10_11 (void);
+    BMD_PUBLIC IDeckLinkGLScreenPreviewHelper* CreateOpenGLScreenPreviewHelper_v10_11 (void);
+    BMD_PUBLIC IDeckLinkVideoConversion* CreateVideoConversionInstance_v10_11 (void);
+    BMD_PUBLIC IDeckLinkVideoFrameAncillaryPackets* CreateVideoFrameAncillaryPacketsInstance_v10_11 (void); // For use when creating a custom IDeckLinkVideoFrame without wrapping IDeckLinkOutput::CreateVideoFrame
 
 }
 
